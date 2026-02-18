@@ -1016,11 +1016,11 @@
                     const cell = document.createElement('div'); cell.className = 'cell';
                     const isActive = activeColumns.includes(c);
                     
-                    // VISIBILITY LOGIC
+                    // LITY LOGIC
                     if (appMode === 'CMD') {
                         const isSampleRow = ['C','D','E','F','G','H','I'].includes(label) || type === 'well-bf';
                         if(isSampleRow && !isActive) cell.style.visibility = 'hidden'; 
-                        else if (!isActive) cell.style.opacity = 0.5;
+                        else if (!isActive) cell.style.opacity = 1.0;
                     } else {
                         // STV
                         const alwaysVisibleRows = ['R', 'A', 'B'];
