@@ -607,12 +607,23 @@
             }
             
             if (stepName.includes('Regeneration')) {
-                const s1 = (colIndex * 2) - 1;
+                const logicalLane = activeColumns.indexOf(colIndex) + 1;
                 let rWell = 'well-R4';
-                if ([1,2,9,10].includes(s1)) rWell = 'well-R1';
-                else if ([3,4,11,12].includes(s1)) rWell = 'well-R2';
-                else if ([5,6,13,14].includes(s1)) rWell = 'well-R3';
-                return [{ id: rWell, off: 0, side: 'Both' }];
+                if (currentMode === 4) {
+                    if (logicalLane === 1) rWell = 'well-R1';
+                    else if (logicalLane === 2) rWell = 'well-R2';
+                } else if (currentMode === 8) {
+                    if (logicalLane === 1) rWell = 'well-R1';
+                    else if (logicalLane === 2) rWell = 'well-R2';
+                    else if (logicalLane === 3) rWell = 'well-R3';
+                    else if (logicalLane === 4) rWell = 'well-R4';
+                } else {
+                    const s1 = (colIndex * 2) - 1;
+                    if ([1,2,9,10].includes(s1)) rWell = 'well-R1';
+                    else if ([3,4,11,12].includes(s1)) rWell = 'well-R2';
+                    else if ([5,6,13,14].includes(s1)) rWell = 'well-R3';
+                }
+                return [{ id: rWell, off: 0, side: 'Both', type: 'regen' }];
             }
             if (stepName.includes('Clean')) return [{ id: (colIndex % 2 !== 0) ? 'well-A3' : 'well-A4', off: 0, side: 'Both' }];
             if (stepName.includes('Ethanolamine')) return [{ id: (colIndex % 2 !== 0) ? 'well-A7' : 'well-A8', off: 0, side: 'Both' }];
@@ -646,11 +657,22 @@
             }
             
             if (stepName.includes('Regeneration')) {
-                const s1 = (colIndex * 2) - 1;
+                const logicalLane = activeColumns.indexOf(colIndex) + 1;
                 let rWell = 'well-R4';
-                if ([1,2,9,10].includes(s1)) rWell = 'well-R1';
-                else if ([3,4,11,12].includes(s1)) rWell = 'well-R2';
-                else if ([5,6,13,14].includes(s1)) rWell = 'well-R3';
+                if (currentMode === 4) {
+                    if (logicalLane === 1) rWell = 'well-R1';
+                    else if (logicalLane === 2) rWell = 'well-R2';
+                } else if (currentMode === 8) {
+                    if (logicalLane === 1) rWell = 'well-R1';
+                    else if (logicalLane === 2) rWell = 'well-R2';
+                    else if (logicalLane === 3) rWell = 'well-R3';
+                    else if (logicalLane === 4) rWell = 'well-R4';
+                } else {
+                    const s1 = (colIndex * 2) - 1;
+                    if ([1,2,9,10].includes(s1)) rWell = 'well-R1';
+                    else if ([3,4,11,12].includes(s1)) rWell = 'well-R2';
+                    else if ([5,6,13,14].includes(s1)) rWell = 'well-R3';
+                }
                 return [{ id: rWell, off: 0, side: 'Both', type: 'regen' }];
             }
             
@@ -659,8 +681,8 @@
                 // 1. Ligand Step
                 if (step.type === 'ligand') {
                     const sources = [];
-                    // Left Sensor (Odd) always gets R5
-                    sources.push({ id: 'well-R5', off: -4, side: 'L', type: 'ligand' });
+                    // Odd sensor (Left) comes from associated BF well
+                    sources.push({ id: `well-BF${colIndex}`, off: -4, side: 'L', type: 'buffer' });
                     
                     if (captureMode === 'Multi-Analyte') {
                         // Right Sensor (Even) gets R6
@@ -685,10 +707,10 @@
                             { id: `well-BF${colIndex}`, off: 5, type: 'buffer', side: 'Both' }
                         ];
                     } else {
-                        // Multi-Ligand: Source from R6 + BF
+                        // Multi-Ligand: Source from R5 and R6
                         return [
-                            { id: 'well-R6', off: -5, type: 'analyte', side: 'Both' },
-                            { id: `well-BF${colIndex}`, off: 5, type: 'buffer', side: 'Both' }
+                            { id: 'well-R5', off: -4, type: 'analyte', side: 'L' },
+                            { id: 'well-R6', off: 4, type: 'analyte', side: 'R' }
                         ];
                     }
                 }
@@ -741,8 +763,8 @@
             const tag = document.createElement('span'); 
             tag.className = 'source-tag';
             
-            // Special check: If we are in Multi-Ligand Mode, and using R6, it acts as Analyte
-            if (captureMode === 'Multi-Ligand' && wellId === 'well-R6' && typeContext === 'analyte') {
+            // Special check: If we are in Multi-Ligand Mode, and using R5/R6, it acts as Analyte
+            if (captureMode === 'Multi-Ligand' && (wellId === 'well-R6' || wellId === 'well-R5') && typeContext === 'analyte') {
                  tag.style.backgroundColor = (appMode==='CMD') ? colorsCMD['ANALYTE'] : colorsSTV['ANALYTE'];
             }
             else if (forceAnalyteColor && appMode === 'CMD') {
@@ -824,8 +846,8 @@
                 const sources = getSourcesForColumn(actId, step, col);
                 sources.forEach(src => {
                     let color;
-                    // Specific Override for R6 as Analyte
-                    if (captureMode === 'Multi-Ligand' && src.id === 'well-R6' && step.type === 'analyte') {
+                    // Specific Override for R5/R6 as Analyte
+                    if (captureMode === 'Multi-Ligand' && (src.id === 'well-R6' || src.id === 'well-R5') && step.type === 'analyte') {
                         color = (appMode==='CMD') ? colorsCMD['ANALYTE'] : colorsSTV['ANALYTE'];
                     } else {
                         color = getSourceColor(src.id, src.type);
