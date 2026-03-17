@@ -786,10 +786,11 @@
                             { id: `well-BF${colIndex}`, off: 5, type: 'buffer', side: 'Both' }
                         ];
                     } else {
-                        // Multi-Ligand: Source from R5 and R6
+// Multi-Ligand: Source from R6 + BF 
                         return [
-                            { id: 'well-R5', off: -4, type: 'analyte', side: 'L' },
-                            { id: 'well-R6', off: 4, type: 'analyte', side: 'R' }
+                            { id: 'well-R6', off: -5, type: 'analyte', side: 'Both' },
+                            { id: 'well-R5', off: -5, type: 'analyte', side: 'Both' },
+                            { id: `well-BF${colIndex}`, off: 5, type: 'buffer', side: 'Both' }
                         ];
                     }
                 }
