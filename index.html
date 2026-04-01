@@ -363,7 +363,7 @@
     </aside>
 
     <script>
-               // --- 1. ZOOM & PAN LOGIC ---
+        // --- 1. ZOOM & PAN LOGIC ---
         let scale = 1;
         let pointX = 0;
         let pointY = 0;
@@ -764,8 +764,9 @@
                     sources.push({ id: `well-BF${colIndex}`, off: -4, side: 'L', type: 'buffer' });
                     
                     if (captureMode === 'Multi-Analyte') {
-                        // Right Sensor (Even) gets R6
-                        sources.push({ id: 'well-R6', off: 4, side: 'R', type: 'ligand' });
+                        // Right Sensor (Even) gets R5 for odd lanes, R6 for even lanes
+                        const ligandSrc = (colIndex % 2 !== 0) ? 'well-R5' : 'well-R6';
+                        sources.push({ id: ligandSrc, off: 4, side: 'R', type: 'ligand' });
                     } else {
                         // Multi-Ligand: Right Sensor gets Plate
                         sources.push({ id: `well-${step.roundRow}${colIndex}`, off: 4, side: 'R', type: 'ligand' });
@@ -786,10 +787,10 @@
                             { id: `well-BF${colIndex}`, off: 5, type: 'buffer', side: 'Both' }
                         ];
                     } else {
-// Multi-Ligand: Source from R6 + BF 
+                        // Multi-Ligand: Source from R5/R6 based on Lane + BF 
+                        const analyteSrc = (colIndex % 2 !== 0) ? 'well-R5' : 'well-R6';
                         return [
-                            { id: 'well-R6', off: -5, type: 'analyte', side: 'Both' },
-                            { id: 'well-R5', off: -5, type: 'analyte', side: 'Both' },
+                            { id: analyteSrc, off: -5, type: 'analyte', side: 'Both' },
                             { id: `well-BF${colIndex}`, off: 5, type: 'buffer', side: 'Both' }
                         ];
                     }
@@ -1113,6 +1114,18 @@
             if(mode === 4) activeColumns = [4, 5];
             else if(mode === 8) activeColumns = [3, 4, 5, 6];
             else activeColumns = [1, 2, 3, 4, 5, 6, 7, 8];
+
+            // Update Unique Capture Molecules Max
+            const maxMolecules = mode / 2;
+            const ligandRangeEl = document.getElementById('ligandRange');
+            ligandRangeEl.max = maxMolecules;
+            
+            // Adjust current value if it exceeds the new max
+            if (parseInt(ligandRangeEl.value) > maxMolecules) {
+                ligandRangeEl.value = maxMolecules;
+                updateLigandCount(maxMolecules);
+            }
+
             renderGrid();
         }
 
